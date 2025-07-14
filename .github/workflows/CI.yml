@@ -118,15 +118,15 @@ jobs:
       - run: terraform init
 
       - name: Run Terraform Plan
-        run: terraform plan -var environment=dev
+        run: terraform plan -var environment=dev -out=tfplan > plan_output.txt || echo $? > plan_exit.txt
 
-      # - name: Comment Plan
-      #   if: github.event_name == 'pull_request'
-      #   uses: GetTerminus/terraform-pr-commenter@v2
-      #   with:
-      #     commenter_type: plan
-      #     commenter_input: plan_output.txt
-      #     commenter_exitcode: 0
+      - name: Comment Plan
+        if: github.event_name == 'pull_request'
+        uses: GetTerminus/terraform-pr-commenter@v2
+        with:
+          commenter_type: plan
+          commenter_input: plan_output.txt
+          commenter_exitcode: 0
 
   version:
     name: Calculate Version
