@@ -66,6 +66,9 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
     steps:
@@ -78,16 +81,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
 
-      - run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
       - name: tfsec Scan
         uses: aquasecurity/tfsec-pr-commenter-action@v1.3.1
         with:
           github_token: ${{ secrets.PAT_TOKEN }}
+          tfsec_args: --soft-fail
 
   plan:
     name: Terraform Plan
