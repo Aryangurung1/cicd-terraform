@@ -29,7 +29,7 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: ${{ github.repository }}
-          version: ${{ github.event.inputs.version }}
+          tag: ${{ github.event.inputs.version }}
           file: terraform-dev-${{ github.event.inputs.version }}.zip
           token: ${{ secrets.PAT_TOKEN }}
 
@@ -38,7 +38,7 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: ${{ github.repository }}
-          version: ${{ github.event.inputs.version }}
+          tag: ${{ github.event.inputs.version }}
           file: terraform-release-${{ github.event.inputs.version }}.zip
           token: ${{ secrets.PAT_TOKEN }}
 
