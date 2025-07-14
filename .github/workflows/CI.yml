@@ -175,7 +175,7 @@ jobs:
 
       - name: Publish GitHub Release
         if: github.ref == 'refs/heads/main'
-        uses: marvinpinto/action-automatic-releases@v1
+        uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: ${{ secrets.PAT_TOKEN }}
           automatic_release_tag: ${{ needs.version.outputs.tag }}
