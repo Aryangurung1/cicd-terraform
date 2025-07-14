@@ -118,7 +118,7 @@ jobs:
       - run: terraform init
 
       - name: Run Terraform Plan
-        run: terraform plan
+        run: terraform plan -var environment=dev
 
       # - name: Comment Plan
       #   if: github.event_name == 'pull_request'
