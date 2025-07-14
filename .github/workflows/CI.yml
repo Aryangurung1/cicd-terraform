@@ -118,7 +118,7 @@ jobs:
       - run: terraform init
 
       - name: Run Terraform Plan
-        run: terraform plan -var-file="terraform.tfvars" > plan_output.txt || echo $? > plan_exit.txt
+        run: terraform plan -var-file="terraform.tfvars" -parallelism=20 > plan_output.txt || echo $? > plan_exit.txt
 
       - name: Comment Plan
         if: github.event_name == 'pull_request'
