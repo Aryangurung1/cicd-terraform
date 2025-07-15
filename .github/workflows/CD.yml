@@ -24,42 +24,37 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq unzip
+      - name: Install dependencies (jq, unzip, curl)
+        run: sudo apt-get update && sudo apt-get install -y jq unzip curl
 
-      - name: Download dev artifact
-        if: ${{ github.event.inputs.environment == 'dev' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-dev-${{ github.event.inputs.version }}
-          path: ./artifact
-
-      - name: Download prod artifact via GitHub Release
-        if: ${{ github.event.inputs.environment == 'prod' }}
+      - name: Download Artifact from GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           TAG: ${{ github.event.inputs.version }}
+          ENV: ${{ github.event.inputs.environment }}
         run: |
-          FILE="terraform-release-$TAG.zip"
+          if [ "$ENV" = "dev" ]; then
+            FILE="terraform-dev-$TAG.zip"
+          else
+            FILE="terraform-release-$TAG.zip"
+          fi
 
-          echo "Downloading $FILE from release $TAG"
+          echo "Looking for release with tag $TAG"
+          RELEASE_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/$TAG)
 
-          RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/$TAG | jq -r .id)
-
+          RELEASE_ID=$(echo "$RELEASE_DATA" | jq -r .id)
           if [ "$RELEASE_ID" = "null" ]; then
             echo "Release with tag $TAG not found."
             exit 1
           fi
 
-          ASSET_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/$RELEASE_ID/assets | jq -r --arg FILE "$FILE" '.[] | select(.name==$FILE) | .id')
-
+          ASSET_ID=$(echo "$RELEASE_DATA" | jq -r --arg FILE "$FILE" '.assets[] | select(.name==$FILE) | .id')
           if [ -z "$ASSET_ID" ]; then
             echo "Asset $FILE not found in release $TAG."
             exit 1
           fi
 
+          echo "Downloading $FILE (asset ID: $ASSET_ID)"
           curl -L -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/octet-stream" \
             https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/$ASSET_ID \
